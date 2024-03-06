@@ -1,1 +1,1 @@
-# UDPServerSimulation
+This project simulates a TCP server-client connection using UDP sockets. The client and the server both have a welcoming socket, but once a connection is made they move communication to two new sockets. 
