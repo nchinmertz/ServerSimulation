@@ -1,6 +1,11 @@
 import socket
 from _helper import decode, encode
 import random
+import sys
+from _thread import *
+import threading
+
+print_lock = threading.Lock()
 
 
 class Server:
@@ -37,7 +42,9 @@ class Server:
                     self.sockets_used.remove(s)
                     self.ports_used.remove(port)
                     s.close()
-                    break
+                    return
+                else:
+                    continue
         except KeyboardInterrupt:
             print(f"Server at port {port} is closing sending fin to client at {client_address}")
             message = encode("fin", port, client_port)
@@ -48,7 +55,7 @@ class Server:
                 if message["message type"] == "ack":
                     print(f"Received ack from client at {client_port}, closing server at port {port}")
                     s.close()
-                    break
+                    return
 
     def welcome(self):
         welcome_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
@@ -68,8 +75,15 @@ class Server:
                     message = welcome_socket.recv(1024)
                     message = decode(message)
                     if message["message type"] == "ack":
+
                         new_client_port = int(message["data"])
                         self.new_socket(new_socket, new_port, new_client_port)
+                        """
+                        start_new_thread(self.new_socket, (new_socket, new_port, new_client_port))
+                        print_lock.acquire()
+                        new_thread = threading.Thread(target=self.new_socket, args=)
+                        new_thread.start()
+                        """
             except KeyboardInterrupt:
                 for s in self.sockets_used:
                     s.close()
@@ -78,11 +92,19 @@ class Server:
 
     def run(self):
         self.welcome()
+        """
+        print_lock.acquire()
+        start_new_thread(self.welcome, ())
+        
+        welcome = threading.Thread(target=self.welcome, args=())
+        welcome.start()
+        """
 
 
 def main():
-    ip = "192.168.0.136"
-    server_welcome_port = 1234
+    args = sys.argv
+    ip = args[1]
+    server_welcome_port = int(args[2])
     server = Server(ip, server_welcome_port)
     server.run()
 

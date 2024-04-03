@@ -1,5 +1,6 @@
 import socket
 from _helper import encode, decode
+import sys
 
 
 class Client:
@@ -60,8 +61,9 @@ class Client:
 
 
 def main():
-    ip = "192.168.0.136"
-    server_welcome_port = 1234
+    args = sys.argv
+    ip = args[1]
+    server_welcome_port = int(args[2])
     client = Client(ip, server_welcome_port)
     client.run()
 
